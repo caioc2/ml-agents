@@ -261,6 +261,7 @@ def run_training(run_seed: int, options: RunOptions) -> None:
     csv_writer = CSVWriter(
         summaries_dir,
         required_fields=["Environment/Cumulative Reward", "Environment/Episode Length"],
+        load_model = options.load_model,
     )
     tb_writer = TensorboardWriter(summaries_dir)
     StatsReporter.add_writer(tb_writer)

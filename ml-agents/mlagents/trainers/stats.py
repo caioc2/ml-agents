@@ -69,7 +69,7 @@ class TensorboardWriter(StatsWriter):
 
 
 class CSVWriter(StatsWriter):
-    def __init__(self, base_dir: str, required_fields: List[str] = None):
+    def __init__(self, base_dir: str, required_fields: List[str] = None, load_model: bool = False):
         """
         A StatsWriter that writes to a Tensorboard summary.
         :param base_dir: The directory within which to place the CSV file, which will be {base_dir}/{category}.csv.
@@ -80,6 +80,7 @@ class CSVWriter(StatsWriter):
         self.csv_fields: Dict[str, List[str]] = {}
         self.required_fields = required_fields if required_fields else []
         self.base_dir: str = base_dir
+        self.load_model = load_model
 
     def write_stats(
         self, category: str, values: Dict[str, StatsSummary], step: int
@@ -106,11 +107,16 @@ class CSVWriter(StatsWriter):
             # Only store if the row contains the required fields
             if all(item in keys for item in self.required_fields):
                 self.csv_fields[category] = keys
-                with open(self._get_filepath(category), "w") as file:
-                    title_row = ["Steps"]
-                    title_row.extend(keys)
-                    writer = csv.writer(file)
-                    writer.writerow(title_row)
+                """
+                If it is loading from past training it should not 
+                rewrite the entire file.
+                """
+                if not self.load_model:
+                    with open(self._get_filepath(category), "w") as file:
+                        title_row = ["Steps"]
+                        title_row.extend(keys)
+                        writer = csv.writer(file)
+                        writer.writerow(title_row)
                 return True
             return False
         return True
